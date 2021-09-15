@@ -1,5 +1,6 @@
+<body style="background-color:#c8d7c1">
 ---
-title: "White-throated Sparrow Morphs"
+title: <center>White-throated Sparrow Morphs</center>
 output: 
   html_document:
     df_print: paged
@@ -23,8 +24,10 @@ WTSPdata <- na.omit(WTSPdata)
 
 ```
 
-![Tan-striped color morph](images/tanstripe.jpeg){width=60%}
-![White-striped color morph](images/whitestripe.jpeg){width=60%}
+<center>![Tan-striped color morph](images/tanstripe.jpeg){width=60%}
+![White-striped color morph](images/whitestripe.jpeg){width=60%}</center>
+
+
 
 The white-striped sparrows have been shown to display more aggressive and territorial behaviors, over the tan-striped individuals, including defending food sources like feeders (Kopachena and Falls, 1993). This may imply that white-striped individuals will have a higher fat weight than their more timid tan-striped counterparts.
 
@@ -40,46 +43,36 @@ ggplot(WTSPdata, aes(fat, morph)) +
   ylab ("Color Morph") +
   labs(title="Raw Fit: 1 = White morph, 0 = Tan morph")
 
-ggplot(WTSPdata, aes(wing_length, sex)) +
-  geom_point() +
-  geom_smooth() +
-  xlab ("Wing length (mm)") +
-  ylab ("Sex") +
-  labs(title="Raw Fit: 1 = Male, 0 = Female")
 ```
-Running the data through a GLM:
 
 ```{r GLM}
 fit.1 <- glm(morph~fat, data=WTSPdata, binomial(link="logit"))
-fit.2 <- glm(sex~wing_length, data=WTSPdata, binomial(link="logit"))
 ```
 
-Since we can't use the ratio of the residual deviance to residual DF to look for overdispersion as we do with binomial counts
+Using a binned residual plot to verify that the data works in a binomal GLM:
 
 ```{r}
 x <- predict(fit.1)
 y <- resid(fit.1)
 binnedplot(x, y)
-
-x <- predict(fit.2)
-y <- resid(fit.2)
-binnedplot(x, y)
-
 ```
 ```{r}
 coef(fit.1)
-confint(fit.1)
-
-coef(fit.2)
-confint(fit.2)
 ```
-The logistic curve is linear on the logit scale and the coefficients are the regression intercept (0.14) and slope (0.02) of this line. 
-Checking the assumption that the ratio of the residual deviance to the residual DF (dispersion parameter) is approximately 1:1. It is a little higher based on the summary() output table: (196.7/140=1.4)
+```{r}
+confint(fit.1)
+```
+
+```{r}
+invlogit <- function(x) {1 / ( 1+exp(-x) ) } 
+invlogit(coef(fit.1))
+```
+The logistic curve is linear on the logit scale and the coefficients are the regression intercept (0.535) and slope (0.494) of this line. 
 
 ```{r}
 summary(fit.1)
-summary(fit.2)
 ```
+Checking the assumption that the ratio of the residual deviance to the residual DF (dispersion parameter) is approximately 1:1. It is a little higher based on the summary() output table: (196.7/140=1.4)
 
 I used the "family" argument to specify a binomial distribution (for which the logistic is the default link function). The logistic link function and binomial distribution will take account of the properties and constraints on the pattern of the mean and variance for binomial count data.
 
@@ -89,82 +82,63 @@ ggplot(WTSPdata, aes(fat, morph)) +
   geom_smooth(method="glm", method.args=list(family="binomial"(link="logit"))) + 
   xlab ("Fat (grams)") +
   ylab ("Color Morph")
-
-ggplot(WTSPdata, aes(wing_length, sex)) +
-  geom_point() +
-  geom_smooth(method="glm", method.args=list(family="binomial"(link="logit"))) + 
-  xlab ("Wing Length (mm)") +
-  ylab ("Sex (F = 0, M = 1")
 ```
 
-In this case, the GLM of the binary White-throated Sparrow data suggests no correlation between color morph on the amount of fat a bird may have.
+* In this case, the GLM of the binary White-throated Sparrow data suggests no correlation between color morph on the amount of fat a bird may have.
+
 
 ---
-title: "Point-Count Data"
+**Grasshopper Sparrow Point-Count Data**
 output:
   html_document:
     df_print: paged
 ---
 
-Intro
+Grasshopper Sparrows are a grassland-dependent species, requiring large continuous tracts of pristine prairie to thrive. In this data set, point-count surveys were conducted to quantify how many Grasshopper Sparrows were present on variously-sized plots of grassland.
+
+<center>![](images/GRSP.png){width=70%}</center>
 
 ```{r cleaning up data 2, include=FALSE}
 GRSPdata <- read.csv("data/GRSP_data.csv")
-GRSP.glm <- glm(grsp ~ ta_800, data = GRSPdata, family = poisson)
 ```
+
+A poisson GLM can be used to plot the relationship between the number of birds detected and size of the grassland they're found on, particualrly with a dataset that contains many zeros (as is the case with many point-count datasets such as this one).
 
 ```{r grsp plot, message=FALSE, warning=FALSE}
 ggplot(GRSPdata, aes(ta_800, grsp)) +
-  geom_point(size=2) +
-  #geom_smooth (method=lm, color="red") + #if you wanted to see the gaussian/identity fit
+  geom_point() +
   stat_smooth(method = glm, method.args = list(family = poisson(link = "log"))) +
-  labs(title="GLM, poisson distributed count data") +
+  labs(title="Poisson GLM of Grasshopper Sparrow Point Count Data") +
   xlab ("Size of grassland (ha)") +
   ylab ("No. of Grasshopper Sparrows Detected")
 
 ```
 ```{r}
-grsplink.glm <- glm(grsp ~ ta_800, data = GRSPdata, family = poisson(link = log))
-#this is the same model as above, but all defaults are explicitly reported rather than assumed
-```
-
-```{r grsp glm model, fig.width=6, fig.height=6}
-autoplot(grsplink.glm)
-```
-```{r Look at model 2}
-anova(grsplink.glm)
+grsp.glm <- glm(grsp ~ ta_800, data = GRSPdata, family = poisson(link = log))
+anova(grsp.glm)
 ```
 Because the model is fit with maximum likelihood, we get deviance table. Deviance explained by distance is 2.84 units, unaccounted deviance is 92 and the total deviance (distance + unaccounted) is 149.
 ```{r}
-summary(grsplink.glm)
+autoplot(grsp.glm)
 ```
 
-What does the report tell us?
+```{r}
+summary(grsp.glm)
+```
 
-# look at residual deviance to see if poisson is a good fit
+* P-value < 0.05, which implies a statistically significant effect of grassland size and detecting a higher number of Grasshopper Sparrows.
 
-P-value of 0.09 - no sig effect of distance
+* coefficient tests: **Wald z-value** to tell us whether the estimate is significantly different from zero. Ratio of the estimate/SE (for hectares 0.021/0.001 = 21).
 
-* coefficient tests: **Wald z-value** to tell us whether the estimate is significantly different from zero. Ratio of the estimate/SE (for body size -0.006/0.004 = -1.67).
-
-* The model is over dispersed (146.6/92.0=).
-
-* AIC: to be used in comparing 'fits' of different nested models (more on this later).
+* Checking for over-dispersion: (7511.2/7228.0 = 1.04).
 
 * **We transform the coefficient to make a prediction**; remember that the GLM is predicting the natural logarithm of cancer likelihood over distance. If we want to know how many cancer cases are predicted, we must account for what the link function did.
 
-What is the expected probability of cancer for someone who lives 10km away? ANSWER=e^(-2.422+0.541*5), or 1 and 0.7 for 100km.
+What is the expected number of Grasshopper Sparrow that may be predicted in a 100ha grassland? ANSWER=e^(-3.935+0.021*100), or _ and _ for 100km.
 
 ```{r Exponentiate prediction 2}
-exp(-2.422+0.541*5)
+exp(-3.935+0.021*100)
+
 ```
 
-
-```{r}
-ggplot(GRSPdata, aes(x = ta_800, y = grsp)) +
-geom_point() +
-geom_smooth(method="glm", method.args=list(family="poisson"(link="log"))) +
-xlab("Distance") + ylab("Number of cancer cases") +
-  ggtitle("Linear Model = Poisson Error Structure, Log Link")
-```
-
+</body>
