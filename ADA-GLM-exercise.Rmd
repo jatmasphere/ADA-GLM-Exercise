@@ -68,6 +68,8 @@ ggplot(WTSPdata, aes(fat, morph)) +
 summary(fit.1)
 ```
 
+In this case, the GLM of the binary White-throated Sparrow data reveals no effect of color morph on the amount of fat a bird may have.
+
 In the model Pr(Bush support) = logit^-1(-1.40 + 0.33 · income), we can divide 0.33/4 to get 0.08: a difference of 1 in income category corresponds to no more than an 8% positive difference in the probability of supporting Bush.
 
 
