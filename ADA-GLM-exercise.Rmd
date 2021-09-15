@@ -79,3 +79,73 @@ output:
   html_document:
     df_print: paged
 ---
+
+Intro
+
+```{r cleaning up data, include=FALSE}
+GRSPdata <- read.csv("data/GRSP_data.csv")
+GRSP.glm <- glm(grsp ~ ta_800, data = GRSPdata, family = poisson)
+```
+
+```{r cancer plot, message=FALSE, warning=FALSE, fig.width=4, fig.height=4}
+ggplot(GRSPdata, aes(ta_800, grsp)) +
+  geom_point(size=3) +
+  #geom_smooth (method=lm, color="red") + #if you wanted to see the gaussian/identity fit
+  stat_smooth(method = glm, method.args = list(family = poisson(link = "log"))) +
+  labs(title="GLM, poisson distributed count data") +
+  xlab ("Size of grassland (ha)") +
+  ylab ("No. of Grasshopper Sparrows Detected")
+```
+```{r}
+grsplink.glm <- glm(grsp ~ ta_800, data = GRSPdata, family = poisson(link = log))
+#this is the same model as above, but all defaults are explicitly reported rather than assumed
+```
+
+```{r cancer glm model, fig.width=6, fig.height=6}
+autoplot(grsplink.glm)
+```
+```{r Look at model}
+anova(grsplink.glm)
+```
+Because the model is fit with maximum likelihood, we get deviance table. Deviance explained by distance is 2.84 units, unaccounted deviance is 92 and the total deviance (distance + unaccounted) is 149.
+```{r}
+summary(grsplink.glm)
+```
+
+What does the report tell us?
+
+# look at residual deviance to see if poisson is a good fit
+
+P-value of 0.09 - no sig effect of distance
+
+* coefficient tests: **Wald z-value** to tell us whether the estimate is significantly different from zero. Ratio of the estimate/SE (for body size -0.006/0.004 = -1.67).
+
+* The model is over dispersed (146.6/92.0=).
+
+* AIC: to be used in comparing 'fits' of different nested models (more on this later).
+
+* **We transform the coefficient to make a prediction**; remember that the GLM is predicting the natural logarithm of cancer likelihood over distance. If we want to know how many cancer cases are predicted, we must account for what the link function did.
+
+What is the expected probability of cancer for someone who lives 10km away? ANSWER=e^(-2.422+0.541*5), or 1 and 0.7 for 100km.
+
+```{r Exponentiate prediction}
+exp(-2.422+0.541*5)
+```
+
+
+```{r}
+ggplot(GRSPdata, aes(x = ta_800, y = grsp)) +
+geom_point() +
+geom_smooth(method = "glm", method.args=list(family="quasipoisson"(link="identity")))+
+#geom_smooth(span = 1, colour = "red", se = FALSE) +
+xlab("Distance") + ylab("Number of cancer cases") +
+  ggtitle("Linear Model = Gaussian Error Structure, Identity Link")
+#note negative prediction of fitness below ~3kg.
+
+ggplot(GRSPdata, aes(x = ta_800, y = grsp)) +
+geom_point() +
+geom_smooth(method="glm", method.args=list(family="poisson"(link="log"))) +
+xlab("Distance") + ylab("Number of cancer cases") +
+  ggtitle("Linear Model = Poisson Error Structure, Log Link")
+```
+
