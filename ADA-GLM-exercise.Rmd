@@ -1,6 +1,6 @@
 ---
 title: "White-throated Sparrow Morphs"
-output: Jenna Atma
+output: 
   html_document:
     df_print: paged
 ---
