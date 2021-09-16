@@ -18,12 +18,6 @@ library(AICcmodavg)
 library(grid)
 ```
 
-```{r cleaning up data, include=FALSE}
-WTSPdata <- read.csv("data/WTSP_data.csv")
-WTSPdata <- na.omit(WTSPdata) 
-
-```
-
 <center>![Tan-striped color morph](images/tanstripe.jpeg){width=60%}
 ![White-striped color morph](images/whitestripe.jpeg){width=60%}</center>
 
@@ -32,17 +26,35 @@ $~$
 The white-striped sparrows have been shown to display more aggressive and territorial behaviors, over the tan-striped individuals, including defending food sources like feeders (Kopachena and Falls, 1993). This may imply that white-striped individuals will have a higher fat weight than their more timid tan-striped counterparts.
 
 In order to analyze this, I ran a binomial generalized-mixed model to look at the relationship between the amount of fat each bird has and the color morph of the bird.
+  
+```{r cleaning up data}
+WTSPdata <- read.csv("data/WTSP_data.csv")
+WTSPdata <- na.omit(WTSPdata) 
 
+```
+  
 First, here is a quick look at the raw fit of the data on a binomial graph:
 
 ```{r visualizing raw data, fig.align="center"}
 ggplot(WTSPdata, aes(fat, morph)) +
-  geom_point() +
-  geom_smooth() +
+  geom_point(color="forestgreen", size=3, alpha=.5) +
+  geom_smooth(color="darkgreen") +
   xlab ("Fat (grams)") +
   ylab ("Color Morph") +
-  labs(title="Raw Fit: 1 = White morph, 0 = Tan morph")
+  labs(title="White-throated Sparrow Morph and weight", subtitle="Raw Fit", caption="1 = White-striped morph
+       0 = Tan-striped morph")+
+  theme_bw()
 
+```
+```{r, fig.align="center"}
+ggplot(WTSPdata, aes(fat, morph)) +
+  geom_point(color="forestgreen", size=3, alpha=.5) +
+  geom_smooth(method="glm", method.args=list(family="binomial"(link="logit")), color="darkgreen") + 
+  xlab ("Fat (grams)") +
+  ylab ("Color Morph") +
+  labs(title="White-throated Sparrow Morph and weight", subtitle="Binary GLM", caption="1 = White-striped morph
+       0 = Tan-striped morph")+
+  theme_bw()
 ```
 
 ```{r GLM}
@@ -72,6 +84,8 @@ confint(fit.1)
 invlogit <- function(x) {1 / ( 1+exp(-x) ) } 
 invlogit(coef(fit.1))
 ```
+The logistic link function and binomial distribution will take account of the properties and constraints on the pattern of the mean and variance for binomial count data.
+
 The logistic curve is linear on the logit scale and the coefficients are the regression intercept (0.535) and slope (0.494) of this line. 
 
 ```{r}
@@ -79,22 +93,17 @@ summary(fit.1)
 ```
 Checking the assumption that the ratio of the residual deviance to the residual DF (dispersion parameter) is approximately 1:1. It is a little higher based on the summary() output table: (196.7/140=1.4)
 
-I used the "family" argument to specify a binomial distribution (for which the logistic is the default link function). The logistic link function and binomial distribution will take account of the properties and constraints on the pattern of the mean and variance for binomial count data.
-
-```{r, fig.align="center"}
-ggplot(WTSPdata, aes(fat, morph)) +
-  geom_point() +
-  geom_smooth(method="glm", method.args=list(family="binomial"(link="logit"))) + 
-  xlab ("Fat (grams)") +
-  ylab ("Color Morph")
-```
+Our p-value is 0.83, which indicates that there isn't a significant relationship between the color morph of the bird and it's weight.
   
 $~$  
-* In this case, the GLM of the binary White-throated Sparrow data suggests no correlation between color morph on the amount of fat a bird may have.
+In this case, the GLM of the binary White-throated Sparrow data suggests no correlation between color morph on the amount of fat a bird may have.
 
 $~$
 $~$
 
+<center>![](images/prairie.jpeg){width=95%}</center>
+  
+  $~$
 <center>**Grasshopper Sparrow Point-Count Data**</center>
 
 $~$  
@@ -102,49 +111,66 @@ $~$
 $~$  
 $~$ 
 
-Grasshopper Sparrows are a grassland-dependent species, requiring large continuous tracts of pristine prairie to thrive. In this data set, point-count surveys were conducted to quantify how many Grasshopper Sparrows were present on variously-sized plots of grassland.
-
+Grasshopper Sparrows are a grassland-dependent species, requiring large continuous tracts of pristine prairie to thrive. One might assume that the larger these grasslands are, the more grasshopper sparrows would be able to inhabit that area. 
+  
 <center>![](images/GRSP2.png){width=70%}</center>
-
-```{r cleaning up data 2, include=FALSE}
+  
+  
+In this data set, point-count surveys were conducted to quantify how many Grasshopper Sparrows were present on variously-sized plots of grassland.
+  
+```{r data upload}
 GRSPdata <- read.csv("data/GRSP_data.csv")
 ```
+```{r histogram, include=FALSE, fig.align="center"}
+#ggplot(GRSPdata, aes(x=grsp)) + geom_histogram(binwidth=1, fill="peru") +
+#  ggtitle("Poisson Distributions With Differing Means")+
+#  xlab ("No. of Grasshopper Sparrows") +
+#  ylab ("Frequency") +
+#  theme_bw()
+```
+
 $~$  
-A poisson GLM can be used to plot the relationship between the number of birds detected and size of the grassland they're found on, particualrly with a dataset that contains many zeros (as is the case with many point-count datasets such as this one).
+A poisson GLM can be used to plot the relationship between the number of birds detected and size of the grassland they're found on, particularly with a dataset that contains many zeros (as is the case with many point-count datasets, including this one).
 
 ```{r grsp plot, message=FALSE, warning=FALSE, fig.align="center"}
 ggplot(GRSPdata, aes(ta_800, grsp)) +
-  geom_point() +
-  stat_smooth(method = glm, method.args = list(family = poisson(link = "log"))) +
-  labs(title="Poisson GLM of Grasshopper Sparrow Point Count Data") +
+  geom_point(color="goldenrod", size=2, alpha=.5) +
+  stat_smooth(method = glm, method.args = list(family = poisson(link = "log")), color="chocolate4", size=1.5) +
+  labs(title="Grasshopper Sparrow Detections by Grassland Size", subtitle="Poisson GLM") +
   xlab ("Size of grassland (ha)") +
-  ylab ("No. of Grasshopper Sparrows Detected")
+  ylab ("No. of Grasshopper Sparrows Detected")+
+  theme_bw()
 
 ```
-```{r}
-grsp.glm <- glm(grsp ~ ta_800, data = GRSPdata, family = poisson(link = log))
-anova(grsp.glm)
-```
-Because the model is fit with maximum likelihood, we get deviance table. Deviance explained by distance is 2.84 units, unaccounted deviance is 92 and the total deviance (distance + unaccounted) is 149.
+
 ```{r autoplot, message=FALSE, warning=FALSE, fig.align="center"}
+grsp.glm <- glm(grsp ~ ta_800, data = GRSPdata, family = poisson(link = log))
+
 autoplot(grsp.glm)
 ```
 
+The ‘normal Q–Q plot’ for the transformed residuals checks whether the Poisson distribution is appropriate for the distribution of the residuals, and the scale–location plot checks whether the mean–variance relationship is good (patternless).
+
+```{r}
+anova(grsp.glm)
+```
+Because the model is fit with maximum likelihood, we get deviance table. Deviance explained by grassland size is 2534 units, unaccounted deviance is 7228 and the total deviance (distance + unaccounted) is 10045.
+  
 ```{r}
 summary(grsp.glm)
 ```
 
 * P-value < 0.05, which implies a statistically significant effect of grassland size and detecting a higher number of Grasshopper Sparrows.
 
-* coefficient tests: **Wald z-value** to tell us whether the estimate is significantly different from zero. Ratio of the estimate/SE (for hectares 0.021/0.001 = 21).
-
 * Checking for over-dispersion: (7511.2/7228.0 = 1.04).
-
-* What is the expected number of Grasshopper Sparrows that may be predicted in a 200ha grassland? e^(-3.935+0.021*100), or 1.3 birds in every 200ha plot.
 
 ```{r Exponentiate prediction 2}
 exp(-3.935+0.021*200)
 ```
+
+* The expected number of Grasshopper Sparrows that may be predicted in a 200ha grassland is e^(-3.935+0.021*100), or 1.3 birds in every 200ha plot.
+
+
 
 <center>![](images/GRSP.png){width=70%}</center>
 $~$  
