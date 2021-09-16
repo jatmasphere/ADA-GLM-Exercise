@@ -93,10 +93,10 @@ summary(fit.1)
 ```
 Checking the assumption that the ratio of the residual deviance to the residual DF (dispersion parameter) is approximately 1:1. It is a little higher based on the summary() output table: (196.7/140=1.4)
 
-Our p-value is 0.83, which indicates that there isn't a significant relationship between the color morph of the bird and it's weight.
+Our **p-value is 0.83**, which indicates that there isn't a significant relationship between the color morph of the bird and it's weight.
   
 $~$  
-In this case, the GLM of the binary White-throated Sparrow data suggests no correlation between color morph on the amount of fat a bird may have.
+**In this case, the GLM of the binary White-throated Sparrow data suggests no correlation between color morph on the amount of fat a bird may have.**
 
 $~$
 $~$
@@ -160,16 +160,15 @@ Because the model is fit with maximum likelihood, we get deviance table. Devianc
 summary(grsp.glm)
 ```
 
-* P-value < 0.05, which implies a statistically significant effect of grassland size and detecting a higher number of Grasshopper Sparrows.
+**P-value < 0.05**, which implies a statistically significant effect of grassland size and detecting a higher number of Grasshopper Sparrows.
 
-* Checking for over-dispersion: (7511.2/7228.0 = 1.04).
+Checking for over-dispersion: (7511.2/7228.0 = 1.04).
+
+**The expected number of Grasshopper Sparrows that may be predicted in a 200ha grassland is e^(-3.935+0.021x100), or 1.3 birds in every 200ha plot.**
 
 ```{r Exponentiate prediction 2}
 exp(-3.935+0.021*200)
 ```
-
-* The expected number of Grasshopper Sparrows that may be predicted in a 200ha grassland is e^(-3.935+0.021*100), or 1.3 birds in every 200ha plot.
-
 
 
 <center>![](images/GRSP.png){width=70%}</center>
