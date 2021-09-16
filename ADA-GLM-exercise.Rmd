@@ -19,7 +19,7 @@ library(grid)
 ```
 
 ```{r cleaning up data, include=FALSE}
-WTSPdata <- read.csv("data/WTSP_data_2020.csv")
+WTSPdata <- read.csv("data/WTSP_data.csv")
 WTSPdata <- na.omit(WTSPdata) 
 
 ```
