@@ -47,6 +47,7 @@ ggplot(WTSPdata, aes(fat, morph)) +
 
 ```{r GLM}
 fit.1 <- glm(morph~fat, data=WTSPdata, binomial(link="logit"))
+display(fit.1)
 ```
 
 Using a binned residual plot to verify that the data works in a binomial GLM:
