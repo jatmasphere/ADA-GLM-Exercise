@@ -57,6 +57,10 @@ x <- predict(fit.1)
 y <- resid(fit.1)
 binnedplot(x, y)
 ```
+  
+The points all fall within ±2 standard errors.
+  
+  
 ```{r}
 coef(fit.1)
 ```
